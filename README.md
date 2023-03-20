@@ -1,6 +1,7 @@
 <a href="https://107-systems.org/"><img align="right" src="https://raw.githubusercontent.com/107-systems/.github/main/logo/107-systems.png" width="15%"></a>
 :floppy_disk: `107-Arduino-24LCxx-littlefs`
 ===========================================
+[![Spell Check](https://github.com/107-systems/107-Arduino-24LCxx-littlefs/workflows/Spell%20Check/badge.svg)](https://github.com/107-systems/107-Arduino-24LCxx-littlefs/actions?workflow=Spell+Check)
 
 This Arduino library provides [littlefs](https://github.com/littlefs-project/littlefs) on top of 24LCxx EEPROM's.
 
