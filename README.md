@@ -2,6 +2,7 @@
 :floppy_disk: `107-Arduino-24LCxx-littlefs`
 ===========================================
 [![Arduino Library Badge](https://www.ardu-badge.com/badge/107-Arduino-24LCxx-littlefs.svg?)](https://www.ardu-badge.com/107-Arduino-24LCxx-littlefs)
+[![Compile Examples](https://github.com/107-systems/107-Arduino-24LCxx-littlefs/workflows/Compile%20Examples/badge.svg)](https://github.com/107-systems/107-Arduino-24LCxx-littlefs/actions?workflow=Compile+Examples)
 [![Arduino Lint](https://github.com/107-systems/107-Arduino-24LCxx-littlefs/workflows/Arduino%20Lint/badge.svg)](https://github.com/107-systems/107-Arduino-24LCxx-littlefs/actions?workflow=Arduino+Lint)
 [![Sync Labels](https://github.com/107-systems/107-Arduino-24LCxx-littlefs/workflows/Sync%20Labels/badge.svg)](https://github.com/107-systems/107-Arduino-24LCxx-littlefs/actions?workflow=Sync+Labels)
 [![keywords.txt Checks](https://github.com/107-systems/107-Arduino-24LCxx-littlefs/workflows/Extra%20Library%20Checks/badge.svg)](https://github.com/107-systems/107-Arduino-24LCxx-littlefs/actions?workflow=Extra+Library+Checks)
