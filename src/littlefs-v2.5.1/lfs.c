@@ -1986,7 +1986,7 @@ static int lfs_dir_splittingcompact(lfs_t *lfs, lfs_mdir_t *dir,
             }
 
             if (err) {
-                // welp, we tried, if we ran out of space there's not much
+                // whelp, we tried, if we ran out of space there's not much
                 // we can do, we'll error later if we've become frozen
                 LFS_WARN("Unable to expand superblock");
             } else {
@@ -2340,7 +2340,7 @@ static int lfs_dir_orphaningcommit(lfs_t *lfs, lfs_mdir_t *dir,
                 lfs_fs_prepmove(lfs, 0x3ff, NULL);
             }
 
-            // replace bad pair, either we clean up desync, or no desync occured
+            // replace bad pair, either we clean up desync, or no desync occurred
             lpair[0] = pdir.pair[0];
             lpair[1] = pdir.pair[1];
             lfs_pair_tole32(ldir.pair);
@@ -5763,7 +5763,7 @@ lfs_ssize_t lfs_fs_size(lfs_t *lfs) {
     LFS_TRACE("lfs_fs_size(%p)", (void*)lfs);
 
     lfs_ssize_t res = lfs_fs_rawsize(lfs);
-
+  1989
     LFS_TRACE("lfs_fs_size -> %"PRId32, res);
     LFS_UNLOCK(lfs->cfg);
     return res;
