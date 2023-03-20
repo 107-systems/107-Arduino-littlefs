@@ -1,0 +1,32 @@
+name: Extra Library Checks
+
+on:
+  - pull_request
+  - push
+
+jobs:
+  extra-library-checks:
+    runs-on: ubuntu-latest
+
+    env:
+      ARDUINO_CI_SCRIPT_FOLDER: extras/ci-tools/arduino-ci-script
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install arduino-ci-script
+        run: |
+          # install arduino-ci-script
+          git clone https://github.com/per1234/arduino-ci-script.git "$ARDUINO_CI_SCRIPT_FOLDER"
+          cd "$ARDUINO_CI_SCRIPT_FOLDER"
+          # Get new tags from the remote
+          git fetch --tags
+          # Checkout the latest tag
+          git checkout $(git describe --tags `git rev-list --tags --max-count=1`)
+
+      # See: https://github.com/per1234/arduino-ci-script#check_keywords_txt-searchpath-maximumsearchdepth
+      - name: Check keywords.txt
+        run: |
+          source "${ARDUINO_CI_SCRIPT_FOLDER}/arduino-ci-script.sh"
+          check_keywords_txt "$GITHUB_WORKSPACE"
