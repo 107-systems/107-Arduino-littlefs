@@ -14,24 +14,7 @@
 
 static lfs_t lfs;
 static lfs_file_t file;
-
-const struct lfs_config cfg =
-{
-  // block device operations
-  .read  = nullptr,
-  .prog  = nullptr,
-  .erase = nullptr,
-  .sync  = nullptr,
-
-  // block device configuration
-  .read_size = 16,
-  .prog_size = 16,
-  .block_size = 4096,
-  .block_count = 128,
-  .block_cycles = 500,
-  .cache_size = 16,
-  .lookahead_size = 16,
-};
+static struct lfs_config cfg;
 
 /**************************************************************************************
  * SETUP/LOOP
@@ -41,6 +24,21 @@ void setup()
 {
   Serial.begin(115200);
   while (!Serial) { }
+
+  // block device operations
+  cfg.read  = nullptr;
+  cfg.prog  = nullptr;
+  cfg.erase = nullptr;
+  cfg.sync  = nullptr;
+
+  // block device configuration
+  cfg.read_size = 16;
+  cfg.prog_size = 16;
+  cfg.block_size = 4096;
+  cfg.block_count = 128;
+  cfg.block_cycles = 500;
+  cfg.cache_size = 16;
+  cfg.lookahead_size = 16;
 
   // mount the filesystem
   int err_mount = lfs_mount(&lfs, &cfg);
