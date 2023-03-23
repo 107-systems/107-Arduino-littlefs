@@ -1,6 +1,6 @@
 <a href="https://107-systems.org/"><img align="right" src="https://raw.githubusercontent.com/107-systems/.github/main/logo/107-systems.png" width="15%"></a>
 :floppy_disk: `107-Arduino-littlefs`
-===========================================
+====================================
 [![Arduino Library Badge](https://www.ardu-badge.com/badge/107-Arduino-littlefs.svg?)](https://www.ardu-badge.com/107-Arduino-littlefs)
 [![Compile Examples](https://github.com/107-systems/107-Arduino-littlefs/workflows/Compile%20Examples/badge.svg)](https://github.com/107-systems/107-Arduino-littlefs/actions?workflow=Compile+Examples)
 [![Arduino Lint](https://github.com/107-systems/107-Arduino-littlefs/workflows/Arduino%20Lint/badge.svg)](https://github.com/107-systems/107-Arduino-littlefs/actions?workflow=Arduino+Lint)
