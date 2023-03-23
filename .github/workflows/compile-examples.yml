@@ -28,9 +28,6 @@ jobs:
 
       matrix:
         board:
-          - fqbn: arduino:samd:mkrzero
-            platforms: |
-              - name: arduino:samd
           - fqbn: rp2040:rp2040:rpipico
             platforms: |
               - name: rp2040:rp2040
