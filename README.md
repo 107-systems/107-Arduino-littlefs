@@ -9,7 +9,7 @@
 [![General Formatting Checks](https://github.com/107-systems/107-Arduino-littlefs/workflows/General%20Formatting%20Checks/badge.svg)](https://github.com/107-systems/107-Arduino-littlefs/actions?workflow=General+Formatting+Checks)
 [![Spell Check](https://github.com/107-systems/107-Arduino-littlefs/workflows/Spell%20Check/badge.svg)](https://github.com/107-systems/107-Arduino-littlefs/actions?workflow=Spell+Check)
 
-This Arduino library provides [littlefs](https://github.com/littlefs-project/littlefs) on top of 24LCxx EEPROM's.
+This Arduino library provides a modern C++ wrapper around [littlefs](https://github.com/littlefs-project/littlefs).
 
 Such a feature is useful for the [Cyphal](https://opencyphal.org/) protocol and it's Arduino port [107-Arduino-Cyphal](https://github.com/107-systems/107-Arduino-Cyphal) but naturally can also be used in another context.
 
