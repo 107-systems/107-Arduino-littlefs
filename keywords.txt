@@ -1,5 +1,5 @@
 #######################################
-# Syntax Coloring Map for 107-Arduino-24LCxx-littlefs
+# Syntax Coloring Map for 107-Arduino-littlefs
 #######################################
 
 #######################################
