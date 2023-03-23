@@ -18,6 +18,10 @@ jobs:
 
     env:
       SKETCHES_REPORTS_PATH: sketches-reports
+      LIBRARIES: |
+        # Install the library from the local path.
+        - source-path: ./
+        - name: 107-Arduino-24LCxx
 
     strategy:
       fail-fast: false
@@ -45,6 +49,7 @@ jobs:
         with:
           fqbn: ${{ matrix.board.fqbn }}
           platforms: ${{ matrix.board.platforms }}
+          libraries: ${{ env.LIBRARIES }}
           enable-deltas-report: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           sketches-report-path: ${{ env.SKETCHES_REPORTS_PATH }}
