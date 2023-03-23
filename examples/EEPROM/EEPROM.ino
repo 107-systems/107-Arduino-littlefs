@@ -1,5 +1,6 @@
 /*
- * Basic example demonstrating how to use this library. Heavily inspired by the official littlefs minimal example.
+ * Basic example demonstrating how to use this library with an 24LCxx EEPROM.
+ * Heavily inspired by the official littlefs minimal example.
  */
 
 /**************************************************************************************
