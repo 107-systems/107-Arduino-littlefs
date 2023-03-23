@@ -7,7 +7,16 @@
  * INCLUDE
  **************************************************************************************/
 
+#include <Wire.h>
+
 #include <107-Arduino-littlefs.h>
+#include <107-Arduino-24LCxx.hpp>
+
+/**************************************************************************************
+ * GLOBAL CONSTANTS
+ **************************************************************************************/
+
+static uint8_t const EEPROM_I2C_DEV_ADDR = 0x50;
 
 /**************************************************************************************
  * GLOBAL VARIABLES
@@ -16,6 +25,15 @@
 static lfs_t lfs;
 static lfs_file_t file;
 static struct lfs_config cfg;
+
+EEPROM_24LCxx eeprom(EEPROM_24LCxx_Type::LC64,
+                     EEPROM_I2C_DEV_ADDR,
+                     [](size_t const dev_addr) { Wire.beginTransmission(dev_addr); },
+                     [](uint8_t const data) { Wire.write(data); },
+                     []() { return Wire.endTransmission(); },
+                     [](uint8_t const dev_addr, size_t const len) -> size_t { return Wire.requestFrom(dev_addr, len); },
+                     []() { return Wire.available(); },
+                     []() { return Wire.read(); });
 
 /**************************************************************************************
  * SETUP/LOOP
@@ -26,20 +44,24 @@ void setup()
   Serial.begin(115200);
   while (!Serial) { }
 
+  Wire.begin();
+
+  Serial.println(eeprom);
+
   // block device operations
-  cfg.read  = nullptr;
-  cfg.prog  = nullptr;
-  cfg.erase = nullptr;
-  cfg.sync  = nullptr;
+  cfg.read  = +[](const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size) -> int { eeprom.read_page((block * c->read_size) + off, (uint8_t *)buffer, size); return LFS_ERR_OK; };
+  cfg.prog  = +[](const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size) -> int { eeprom.write_page((block * c->prog_size) + off, (uint8_t const *)buffer, size); return LFS_ERR_OK; };
+  cfg.erase = +[](const struct lfs_config *c, lfs_block_t block) -> int { eeprom.fill_page(block * c->block_size, 0xFF); return LFS_ERR_OK; };
+  cfg.sync  = +[](const struct lfs_config *c) -> int { return LFS_ERR_OK; };
 
   // block device configuration
-  cfg.read_size = 16;
-  cfg.prog_size = 16;
-  cfg.block_size = 4096;
-  cfg.block_count = 128;
-  cfg.block_cycles = 500;
-  cfg.cache_size = 16;
-  cfg.lookahead_size = 16;
+  cfg.read_size      = eeprom.page_size();
+  cfg.prog_size      = eeprom.page_size();
+  cfg.block_size     = eeprom.page_size();
+  cfg.block_count    = eeprom.device_size() / eeprom.page_size();
+  cfg.block_cycles   = 500;
+  cfg.cache_size     = eeprom.page_size();
+  cfg.lookahead_size = eeprom.page_size();
 
   // mount the filesystem
   int err_mount = lfs_mount(&lfs, &cfg);
