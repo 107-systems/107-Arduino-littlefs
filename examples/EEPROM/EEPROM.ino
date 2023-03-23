@@ -43,22 +43,49 @@ void setup()
 {
   Serial.begin(115200);
   while (!Serial) { }
+  delay(1000);
 
   Wire.begin();
 
-  Serial.println(eeprom);
+  /* Commenting in below comment enables "erasing" of the EEPROM.
+   * littlefs as a flash filesystem expects the memory to read
+   * 0xFF in erased state as this is the nature of the beast for
+   * flash memory.
+   */
+// #define ERASE_EEPROM
+#ifdef ERASE_EEPROM
+  size_t const NUM_PAGES = eeprom.device_size() / eeprom.page_size();
+  for(size_t page = 0; page < NUM_PAGES; page++)
+    eeprom.fill_page(page * eeprom.page_size(), 0xFF);
+#endif /* ERASE_EEPROM */
 
   // block device operations
-  cfg.read  = +[](const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size) -> int { eeprom.read_page((block * c->read_size) + off, (uint8_t *)buffer, size); return LFS_ERR_OK; };
-  cfg.prog  = +[](const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size) -> int { eeprom.write_page((block * c->prog_size) + off, (uint8_t const *)buffer, size); return LFS_ERR_OK; };
-  cfg.erase = +[](const struct lfs_config *c, lfs_block_t block) -> int { eeprom.fill_page(block * c->block_size, 0xFF); return LFS_ERR_OK; };
-  cfg.sync  = +[](const struct lfs_config *c) -> int { return LFS_ERR_OK; };
+  cfg.read  = +[](const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size) -> int
+    {
+      eeprom.read_page((block * c->block_size) + off, (uint8_t *)buffer, size);
+      return LFS_ERR_OK;
+    };
+  cfg.prog  = +[](const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size) -> int
+    {
+      eeprom.write_page((block * c->block_size) + off, (uint8_t const *)buffer, size);
+      return LFS_ERR_OK;
+    };
+  cfg.erase = +[](const struct lfs_config *c, lfs_block_t block) -> int
+    {
+      for(size_t off = 0; off < c->block_size; off += eeprom.page_size())
+        eeprom.fill_page((block * c->block_size) + off, 0xFF);
+      return LFS_ERR_OK;
+    };
+  cfg.sync  = +[](const struct lfs_config *c) -> int
+    {
+      return LFS_ERR_OK;
+    };
 
   // block device configuration
   cfg.read_size      = eeprom.page_size();
   cfg.prog_size      = eeprom.page_size();
-  cfg.block_size     = eeprom.page_size();
-  cfg.block_count    = eeprom.device_size() / eeprom.page_size();
+  cfg.block_size     = (eeprom.page_size() * 4); /* littlefs demands (erase) block size to exceed read/prog size. */
+  cfg.block_count    = eeprom.device_size() / cfg.block_size;
   cfg.block_cycles   = 500;
   cfg.cache_size     = eeprom.page_size();
   cfg.lookahead_size = eeprom.page_size();
@@ -69,6 +96,7 @@ void setup()
   // reformat if we can't mount the filesystem
   // this should only happen on the first boot
   if (err_mount) {
+    Serial.println(eeprom);
     Serial.print("Mounting failed with error code "); Serial.println(err_mount);
     lfs_format(&lfs, &cfg);
   }
