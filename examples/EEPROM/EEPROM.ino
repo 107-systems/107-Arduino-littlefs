@@ -22,8 +22,6 @@ static uint8_t const EEPROM_I2C_DEV_ADDR = 0x50;
  * GLOBAL VARIABLES
  **************************************************************************************/
 
-static lfs_t lfs;
-static lfs_file_t file;
 static struct lfs_config cfg;
 
 EEPROM_24LCxx eeprom(EEPROM_24LCxx_Type::LC64,
@@ -34,6 +32,8 @@ EEPROM_24LCxx eeprom(EEPROM_24LCxx_Type::LC64,
                      [](uint8_t const dev_addr, size_t const len) -> size_t { return Wire.requestFrom(dev_addr, len); },
                      []() { return Wire.available(); },
                      []() { return Wire.read(); });
+
+littlefs::Filesystem filesystem(cfg);
 
 /**************************************************************************************
  * SETUP/LOOP
@@ -91,37 +91,42 @@ void setup()
   cfg.lookahead_size = eeprom.page_size();
 
   // mount the filesystem
-  int err_mount = lfs_mount(&lfs, &cfg);
+  auto err_mount = filesystem.mount();
 
   // reformat if we can't mount the filesystem
   // this should only happen on the first boot
-  if (err_mount) {
+  if (err_mount != littlefs::Error::OK) {
     Serial.println(eeprom);
-    Serial.print("Mounting failed with error code "); Serial.println(err_mount);
-    lfs_format(&lfs, &cfg);
+    Serial.print("Mounting failed with error code "); Serial.println(static_cast<int>(err_mount));
+    (void)filesystem.format();
   }
 
-  err_mount = lfs_mount(&lfs, &cfg);
-  if (err_mount) {
-    Serial.print("Mounting failed again with error code "); Serial.println(err_mount);
+  err_mount = filesystem.mount();
+  if (err_mount != littlefs::Error::OK) {
+    Serial.print("Mounting failed again with error code "); Serial.println(static_cast<int>(err_mount));
     return;
   }
 
   // read current count
   uint32_t boot_count = 0;
-  lfs_file_open(&lfs, &file, "boot_count", LFS_O_RDWR | LFS_O_CREAT);
-  lfs_file_read(&lfs, &file, &boot_count, sizeof(boot_count));
+  auto const opt_file_hdl = filesystem.open("boot_count", static_cast<int>(littlefs::OpenFlag::RDWR) | static_cast<int>(littlefs::OpenFlag::CREAT));
+  if (!opt_file_hdl.has_value()) {
+    Serial.print("open failed with error code "); Serial.println(static_cast<int>(filesystem.last_error()));
+    return;
+  }
+  littlefs::FileHandle const file_hdl = opt_file_hdl.value();
+  (void)filesystem.read(file_hdl, &boot_count, sizeof(boot_count));
 
   // update boot count
   boot_count += 1;
-  lfs_file_rewind(&lfs, &file);
-  lfs_file_write(&lfs, &file, &boot_count, sizeof(boot_count));
+  (void)filesystem.rewind(file_hdl);
+  (void)filesystem.write(file_hdl, &boot_count, sizeof(boot_count));
 
   // remember the storage is not updated until the file is closed successfully
-  lfs_file_close(&lfs, &file);
+  (void)filesystem.close(file_hdl);
 
   // release any resources we were using
-  lfs_unmount(&lfs);
+  (void)filesystem.unmount();
 
   // print the boot count
   Serial.print("boot_count: ");
