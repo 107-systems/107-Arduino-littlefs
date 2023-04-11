@@ -22,11 +22,11 @@ namespace littlefs
  * PUBLIC MEMBER FUNCTIONS
  **************************************************************************************/
 
-std::variant<Error, FileHandle> Filesystem::open(std::string const & path, int const flags)
+std::variant<Error, FileHandle> Filesystem::open(std::string const & path, OpenFlag const flags)
 {
   auto file_hdl = std::make_shared<lfs_file_t>();
 
-  int const rc = lfs_file_open(&_lfs, file_hdl.get(), path.c_str(), flags);
+  int const rc = lfs_file_open(&_lfs, file_hdl.get(), path.c_str(), static_cast<int>(flags));
 
   if (rc < LFS_ERR_OK)
     return static_cast<Error>(rc);

@@ -109,7 +109,7 @@ void setup()
 
   // read current count
   uint32_t boot_count = 0;
-  auto const rc_open = filesystem.open("boot_count", static_cast<int>(littlefs::OpenFlag::RDWR) | static_cast<int>(littlefs::OpenFlag::CREAT));
+  auto const rc_open = filesystem.open("boot_count", littlefs::OpenFlag::RDWR | littlefs::OpenFlag::CREAT);
   if (std::holds_alternative<littlefs::Error>(rc_open))
   {
     Serial.print("open failed with error code ");

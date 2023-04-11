@@ -102,7 +102,7 @@ public:
   [[nodiscard]] Error rename(std::string const & old_path, std::string const & new_path) { return static_cast<Error>(lfs_rename(&_lfs, old_path.c_str(), new_path.c_str())); }
 #endif
 
-  [[nodiscard]] std::variant<Error, FileHandle> open (std::string const & path, int const flags);
+  [[nodiscard]] std::variant<Error, FileHandle> open (std::string const & path, OpenFlag const flags);
   [[nodiscard]] Error                           sync (FileHandle const fd);
   [[nodiscard]] Error                           close(FileHandle const fd);
 
@@ -118,6 +118,14 @@ public:
   [[nodiscard]] Error                       rewind(FileHandle const fd);
 };
 
+/**************************************************************************************
+ * FREE FUNCTIONS
+ **************************************************************************************/
+
+constexpr OpenFlag operator | (OpenFlag const & lhs, OpenFlag const & rhs)
+{
+  return static_cast<OpenFlag>(static_cast<int>(lhs) | static_cast<int>(rhs));
+}
 /**************************************************************************************
  * NAMESPACE
  **************************************************************************************/
