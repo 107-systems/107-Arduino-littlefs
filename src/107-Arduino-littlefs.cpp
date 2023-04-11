@@ -29,7 +29,7 @@ std::optional<FileHandle> Filesystem::open(std::string const & path, int const f
 
   int const rc = lfs_file_open(&_lfs, file_hdl.get(), path.c_str(), flags);
 
-  if (rc != LFS_ERR_OK) {
+  if (rc < LFS_ERR_OK) {
     _last_err = static_cast<Error>(rc);
     return std::nullopt;
   }
@@ -50,7 +50,7 @@ std::optional<size_t> Filesystem::read(FileHandle const fd, void * read_buf, siz
 
   int const rc = lfs_file_read(&_lfs, iter->second.get(), read_buf, bytes_to_read);
 
-  if (rc != LFS_ERR_OK) {
+  if (rc < LFS_ERR_OK) {
     _last_err = static_cast<Error>(rc);
     return std::nullopt;
   }
@@ -71,7 +71,7 @@ std::optional<size_t> Filesystem::write(FileHandle const fd, void const * write_
 
   int const rc = lfs_file_write(&_lfs, iter->second.get(), write_buf, bytes_to_write);
 
-  if (rc != LFS_ERR_OK) {
+  if (rc < LFS_ERR_OK) {
     _last_err = static_cast<Error>(rc);
     return std::nullopt;
   }
@@ -103,7 +103,7 @@ std::optional<size_t> Filesystem::tell(FileHandle const fd)
 
   int const rc = lfs_file_tell(&_lfs, iter->second.get());
 
-  if (rc != LFS_ERR_OK) {
+  if (rc < LFS_ERR_OK) {
     _last_err = static_cast<Error>(rc);
     return std::nullopt;
   }
@@ -123,7 +123,7 @@ std::optional<size_t> Filesystem::size(FileHandle const fd)
 
   int const rc = lfs_file_size(&_lfs, iter->second.get());
 
-  if (rc != LFS_ERR_OK) {
+  if (rc < LFS_ERR_OK) {
     _last_err = static_cast<Error>(rc);
     return std::nullopt;
   }
@@ -143,7 +143,7 @@ std::optional<size_t> Filesystem::seek(FileHandle const fd, int const offset, Wh
 
   int const rc = lfs_file_seek(&_lfs, iter->second.get(), offset, static_cast<int>(whence));
 
-  if (rc != LFS_ERR_OK) {
+  if (rc < LFS_ERR_OK) {
     _last_err = static_cast<Error>(rc);
     return std::nullopt;
   }
