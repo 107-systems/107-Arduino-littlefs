@@ -109,12 +109,14 @@ void setup()
 
   // read current count
   uint32_t boot_count = 0;
-  auto const opt_file_hdl = filesystem.open("boot_count", static_cast<int>(littlefs::OpenFlag::RDWR) | static_cast<int>(littlefs::OpenFlag::CREAT));
-  if (!opt_file_hdl.has_value()) {
-    Serial.print("open failed with error code "); Serial.println(static_cast<int>(filesystem.last_error()));
+  auto const rc_open = filesystem.open("boot_count", static_cast<int>(littlefs::OpenFlag::RDWR) | static_cast<int>(littlefs::OpenFlag::CREAT));
+  if (std::holds_alternative<littlefs::Error>(rc_open))
+  {
+    Serial.print("open failed with error code ");
+    Serial.println(static_cast<int>(std::get<littlefs::Error>(rc_open)));
     return;
   }
-  littlefs::FileHandle const file_hdl = opt_file_hdl.value();
+  littlefs::FileHandle const file_hdl = std::get<littlefs::FileHandle>(rc_open);
   (void)filesystem.read(file_hdl, &boot_count, sizeof(boot_count));
 
   // update boot count
