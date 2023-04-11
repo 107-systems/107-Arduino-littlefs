@@ -17,7 +17,7 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <optional>
+#include <variant>
 
 /**************************************************************************************
  * NAMESPACE
@@ -81,19 +81,15 @@ class Filesystem
 private:
   lfs_t _lfs;
   lfs_config & _cfg;
-  Error _last_err;
   size_t _file_dsc_cnt;
   std::map<size_t, std::shared_ptr<lfs_file_t>> _file_desc_map;
 public:
   Filesystem(lfs_config & cfg)
   : _cfg{cfg}
-  , _last_err{LFS_ERR_OK}
   , _file_dsc_cnt{0}
   {
     memset(&_lfs, 0, sizeof(_lfs));
   }
-
-  [[nodiscard]] Error last_error() const { return _last_err; }
 
 #ifndef LFS_READONLY
   [[nodiscard]] Error format() { return static_cast<Error>(lfs_format(&_lfs, &_cfg)); }
@@ -106,20 +102,20 @@ public:
   [[nodiscard]] Error rename(std::string const & old_path, std::string const & new_path) { return static_cast<Error>(lfs_rename(&_lfs, old_path.c_str(), new_path.c_str())); }
 #endif
 
-  [[nodiscard]] std::optional<FileHandle> open (std::string const & path, int const flags);
-  [[nodiscard]] Error                     sync (FileHandle const fd);
-  [[nodiscard]] Error                     close(FileHandle const fd);
+  [[nodiscard]] std::variant<Error, FileHandle> open (std::string const & path, int const flags);
+  [[nodiscard]] Error                           sync (FileHandle const fd);
+  [[nodiscard]] Error                           close(FileHandle const fd);
 
-  [[nodiscard]] std::optional<size_t> read    (FileHandle const fd, void * read_buf, size_t const bytes_to_read);
+  [[nodiscard]] std::variant<Error, size_t> read    (FileHandle const fd, void * read_buf, size_t const bytes_to_read);
 #ifndef LFS_READONLY
-  [[nodiscard]] std::optional<size_t> write   (FileHandle const fd, void const * write_buf, size_t const bytes_to_write);
-  [[nodiscard]] Error                 truncate(FileHandle const fd, int const size);
+  [[nodiscard]] std::variant<Error, size_t> write   (FileHandle const fd, void const * write_buf, size_t const bytes_to_write);
+  [[nodiscard]] Error                       truncate(FileHandle const fd, int const size);
 #endif
 
-  [[nodiscard]] std::optional<size_t> tell  (FileHandle const fd);
-  [[nodiscard]] std::optional<size_t> size  (FileHandle const fd);
-  [[nodiscard]] std::optional<size_t> seek  (FileHandle const fd, int const offset, WhenceFlag const whence);
-  [[nodiscard]] Error                 rewind(FileHandle const fd);
+  [[nodiscard]] std::variant<Error, size_t> tell  (FileHandle const fd);
+  [[nodiscard]] std::variant<Error, size_t> size  (FileHandle const fd);
+  [[nodiscard]] std::variant<Error, size_t> seek  (FileHandle const fd, int const offset, WhenceFlag const whence);
+  [[nodiscard]] Error                       rewind(FileHandle const fd);
 };
 
 /**************************************************************************************
