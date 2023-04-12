@@ -22,18 +22,46 @@ static uint8_t const EEPROM_I2C_DEV_ADDR = 0x50;
  * GLOBAL VARIABLES
  **************************************************************************************/
 
-static struct lfs_config cfg;
+static EEPROM_24LCxx eeprom(EEPROM_24LCxx_Type::LC64,
+                            EEPROM_I2C_DEV_ADDR,
+                            [](size_t const dev_addr) { Wire.beginTransmission(dev_addr); },
+                            [](uint8_t const data) { Wire.write(data); },
+                            []() { return Wire.endTransmission(); },
+                            [](uint8_t const dev_addr, size_t const len) -> size_t { return Wire.requestFrom(dev_addr, len); },
+                            []() { return Wire.available(); },
+                            []() { return Wire.read(); });
 
-EEPROM_24LCxx eeprom(EEPROM_24LCxx_Type::LC64,
-                     EEPROM_I2C_DEV_ADDR,
-                     [](size_t const dev_addr) { Wire.beginTransmission(dev_addr); },
-                     [](uint8_t const data) { Wire.write(data); },
-                     []() { return Wire.endTransmission(); },
-                     [](uint8_t const dev_addr, size_t const len) -> size_t { return Wire.requestFrom(dev_addr, len); },
-                     []() { return Wire.available(); },
-                     []() { return Wire.read(); });
-
-littlefs::Filesystem filesystem(cfg);
+static littlefs::FilesystemConfig filesystem_config
+  (
+    +[](const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size) -> int
+    {
+      eeprom.read_page((block * c->block_size) + off, (uint8_t *)buffer, size);
+      return LFS_ERR_OK;
+    },
+    +[](const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size) -> int
+    {
+      eeprom.write_page((block * c->block_size) + off, (uint8_t const *)buffer, size);
+      return LFS_ERR_OK;
+    },
+    +[](const struct lfs_config *c, lfs_block_t block) -> int
+    {
+      for(size_t off = 0; off < c->block_size; off += eeprom.page_size())
+        eeprom.fill_page((block * c->block_size) + off, 0xFF);
+      return LFS_ERR_OK;
+    },
+    +[](const struct lfs_config *c) -> int
+    {
+      return LFS_ERR_OK;
+    },
+    eeprom.page_size(),
+    eeprom.page_size(),
+    (eeprom.page_size() * 4), /* littlefs demands (erase) block size to exceed read/prog size. */
+    eeprom.device_size() / (eeprom.page_size() * 4),
+    500,
+    eeprom.page_size(),
+    eeprom.page_size()
+  );
+static littlefs::Filesystem filesystem(filesystem_config);
 
 /**************************************************************************************
  * SETUP/LOOP
@@ -58,37 +86,6 @@ void setup()
   for(size_t page = 0; page < NUM_PAGES; page++)
     eeprom.fill_page(page * eeprom.page_size(), 0xFF);
 #endif /* ERASE_EEPROM */
-
-  // block device operations
-  cfg.read  = +[](const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size) -> int
-    {
-      eeprom.read_page((block * c->block_size) + off, (uint8_t *)buffer, size);
-      return LFS_ERR_OK;
-    };
-  cfg.prog  = +[](const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size) -> int
-    {
-      eeprom.write_page((block * c->block_size) + off, (uint8_t const *)buffer, size);
-      return LFS_ERR_OK;
-    };
-  cfg.erase = +[](const struct lfs_config *c, lfs_block_t block) -> int
-    {
-      for(size_t off = 0; off < c->block_size; off += eeprom.page_size())
-        eeprom.fill_page((block * c->block_size) + off, 0xFF);
-      return LFS_ERR_OK;
-    };
-  cfg.sync  = +[](const struct lfs_config *c) -> int
-    {
-      return LFS_ERR_OK;
-    };
-
-  // block device configuration
-  cfg.read_size      = eeprom.page_size();
-  cfg.prog_size      = eeprom.page_size();
-  cfg.block_size     = (eeprom.page_size() * 4); /* littlefs demands (erase) block size to exceed read/prog size. */
-  cfg.block_count    = eeprom.device_size() / cfg.block_size;
-  cfg.block_cycles   = 500;
-  cfg.cache_size     = eeprom.page_size();
-  cfg.lookahead_size = eeprom.page_size();
 
   // mount the filesystem
   auto err_mount = filesystem.mount();
