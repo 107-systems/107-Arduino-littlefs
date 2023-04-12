@@ -74,6 +74,7 @@ void setup()
   delay(1000);
 
   Wire.begin();
+  Serial.println(eeprom);
 
   /* Commenting in below comment enables "erasing" of the EEPROM.
    * littlefs as a flash filesystem expects the memory to read
@@ -87,20 +88,20 @@ void setup()
     eeprom.fill_page(page * eeprom.page_size(), 0xFF);
 #endif /* ERASE_EEPROM */
 
-  // mount the filesystem
-  auto err_mount = filesystem.mount();
-
-  // reformat if we can't mount the filesystem
-  // this should only happen on the first boot
-  if (err_mount != littlefs::Error::OK) {
-    Serial.println(eeprom);
-    Serial.print("Mounting failed with error code "); Serial.println(static_cast<int>(err_mount));
+  // mount filesystem
+  if (auto const err_mount = filesystem.mount(); err_mount.has_value())
+  {
+    Serial.print("Mounting failed with error code ");
+    Serial.println(static_cast<int>(err_mount.value()));
+    // reformat if we can't mount the filesystem
+    // this should only happen on the first boot
     (void)filesystem.format();
   }
 
-  err_mount = filesystem.mount();
-  if (err_mount != littlefs::Error::OK) {
-    Serial.print("Mounting failed again with error code "); Serial.println(static_cast<int>(err_mount));
+  if (auto const err_mount = filesystem.mount(); err_mount.has_value())
+  {
+    Serial.print("Mounting failed again with error code ");
+    Serial.println(static_cast<int>(err_mount.value()));
     return;
   }
 
