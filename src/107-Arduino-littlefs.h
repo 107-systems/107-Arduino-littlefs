@@ -76,15 +76,55 @@ typedef size_t FileHandle;
  * CLASS DECLARATION
  **************************************************************************************/
 
+class FilesystemConfig
+{
+private:
+  lfs_config _cfg;
+
+public:
+  typedef int (*ReadFuncPtr)(const struct lfs_config *, lfs_block_t , lfs_off_t, void *, lfs_size_t);
+  typedef int (*ProgFuncPtr)(const struct lfs_config *, lfs_block_t, lfs_off_t, const void *, lfs_size_t);
+  typedef int (*EraseFuncPtr)(const struct lfs_config *, lfs_block_t);
+  typedef int (*SyncFuncPtr)(const struct lfs_config *);
+
+  FilesystemConfig(ReadFuncPtr  read_func,
+                   ProgFuncPtr  prog_func,
+                   EraseFuncPtr erase_func,
+                   SyncFuncPtr  sync_func,
+                   lfs_size_t const read_size,
+                   lfs_size_t const prog_size,
+                   lfs_size_t const block_size,
+                   lfs_size_t const block_count,
+                   int32_t    const block_cycles,
+                   lfs_size_t const cache_size,
+                   lfs_size_t const lookahead_size)
+  {
+    _cfg.read  = read_func;
+    _cfg.prog  = prog_func;
+    _cfg.erase = erase_func;
+    _cfg.sync  = sync_func;
+
+    _cfg.read_size      = read_size;
+    _cfg.prog_size      = prog_size;
+    _cfg.block_size     = block_size;
+    _cfg.block_count    = block_count;
+    _cfg.block_cycles   = block_cycles;
+    _cfg.cache_size     = cache_size;
+    _cfg.lookahead_size = lookahead_size;
+  }
+
+  [[nodiscard]] lfs_config & raw_cfg() { return _cfg; }
+};
+
 class Filesystem
 {
 private:
+  FilesystemConfig & _cfg;
   lfs_t _lfs;
-  lfs_config & _cfg;
   size_t _file_dsc_cnt;
   std::map<size_t, std::shared_ptr<lfs_file_t>> _file_desc_map;
 public:
-  Filesystem(lfs_config & cfg)
+  Filesystem(FilesystemConfig & cfg)
   : _cfg{cfg}
   , _file_dsc_cnt{0}
   {
@@ -92,9 +132,9 @@ public:
   }
 
 #ifndef LFS_READONLY
-  [[nodiscard]] Error format() { return static_cast<Error>(lfs_format(&_lfs, &_cfg)); }
+  [[nodiscard]] Error format() { return static_cast<Error>(lfs_format(&_lfs, &_cfg.raw_cfg())); }
 #endif
-  [[nodiscard]] Error mount() { return static_cast<Error>(lfs_mount(&_lfs, &_cfg)); }
+  [[nodiscard]] Error mount() { return static_cast<Error>(lfs_mount(&_lfs, &_cfg.raw_cfg())); }
   [[nodiscard]] Error unmount() { return static_cast<Error>(lfs_unmount(&_lfs)); }
 
 #ifndef LFS_READONLY
