@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 #include <variant>
+#include <optional>
 
 /**************************************************************************************
  * NAMESPACE
@@ -52,7 +53,6 @@ enum class WhenceFlag : int
 
 enum class Error : int
 {
-  OK          = LFS_ERR_OK,
   IO          = LFS_ERR_IO,
   CORRUPT     = LFS_ERR_CORRUPT,
   NOENT       = LFS_ERR_NOENT,
@@ -132,30 +132,30 @@ public:
   }
 
 #ifndef LFS_READONLY
-  [[nodiscard]] Error format() { return static_cast<Error>(lfs_format(&_lfs, &_cfg.raw_cfg())); }
+  [[nodiscard]] std::optional<Error> format();
 #endif
-  [[nodiscard]] Error mount() { return static_cast<Error>(lfs_mount(&_lfs, &_cfg.raw_cfg())); }
-  [[nodiscard]] Error unmount() { return static_cast<Error>(lfs_unmount(&_lfs)); }
+  [[nodiscard]] std::optional<Error> mount();
+  [[nodiscard]] std::optional<Error> unmount();
 
 #ifndef LFS_READONLY
-  [[nodiscard]] Error remove(std::string const & path) { return static_cast<Error>(lfs_remove(&_lfs, path.c_str())); }
-  [[nodiscard]] Error rename(std::string const & old_path, std::string const & new_path) { return static_cast<Error>(lfs_rename(&_lfs, old_path.c_str(), new_path.c_str())); }
+  [[nodiscard]] std::optional<Error> remove(std::string const & path);
+  [[nodiscard]] std::optional<Error> rename(std::string const & old_path, std::string const & new_path);
 #endif
 
   [[nodiscard]] std::variant<Error, FileHandle> open (std::string const & path, OpenFlag const flags);
-  [[nodiscard]] Error                           sync (FileHandle const fd);
-  [[nodiscard]] Error                           close(FileHandle const fd);
+  [[nodiscard]] std::optional<Error>            sync (FileHandle const fd);
+  [[nodiscard]] std::optional<Error>            close(FileHandle const fd);
 
   [[nodiscard]] std::variant<Error, size_t> read    (FileHandle const fd, void * read_buf, size_t const bytes_to_read);
 #ifndef LFS_READONLY
   [[nodiscard]] std::variant<Error, size_t> write   (FileHandle const fd, void const * write_buf, size_t const bytes_to_write);
-  [[nodiscard]] Error                       truncate(FileHandle const fd, int const size);
+  [[nodiscard]] std::optional<Error>        truncate(FileHandle const fd, int const size);
 #endif
 
   [[nodiscard]] std::variant<Error, size_t> tell  (FileHandle const fd);
   [[nodiscard]] std::variant<Error, size_t> size  (FileHandle const fd);
   [[nodiscard]] std::variant<Error, size_t> seek  (FileHandle const fd, int const offset, WhenceFlag const whence);
-  [[nodiscard]] Error                       rewind(FileHandle const fd);
+  [[nodiscard]] std::optional<Error>        rewind(FileHandle const fd);
 };
 
 /**************************************************************************************
