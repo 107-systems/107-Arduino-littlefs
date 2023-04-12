@@ -25,8 +25,8 @@ namespace littlefs
 #ifndef LFS_READONLY
 std::optional<Error> Filesystem::format()
 {
-  if (auto const err = static_cast<Error>(lfs_format(&_lfs, &_cfg.raw_cfg())); err != Error::OK)
-    return err;
+  if (auto const err = lfs_format(&_lfs, &_cfg.raw_cfg()); err != LFS_ERR_OK)
+    return static_cast<Error>(err);
 
   return std::nullopt;
 }
@@ -34,16 +34,16 @@ std::optional<Error> Filesystem::format()
 
 std::optional<Error> Filesystem::mount()
 {
-  if (auto const err = static_cast<Error>(lfs_mount(&_lfs, &_cfg.raw_cfg())); err != Error::OK)
-    return err;
+  if (auto const err = lfs_mount(&_lfs, &_cfg.raw_cfg()); err != LFS_ERR_OK)
+    return static_cast<Error>(err);
 
   return std::nullopt;
 }
 
 std::optional<Error> Filesystem::unmount()
 {
-  if (auto const err = static_cast<Error>(lfs_unmount(&_lfs)); err != Error::OK)
-    return err;
+  if (auto const err = lfs_unmount(&_lfs); err != LFS_ERR_OK)
+    return static_cast<Error>(err);
 
   return std::nullopt;
 }
@@ -51,16 +51,16 @@ std::optional<Error> Filesystem::unmount()
 #ifndef LFS_READONLY
 std::optional<Error> Filesystem::remove(std::string const & path)
 {
-  if (auto const err = static_cast<Error>(lfs_remove(&_lfs, path.c_str())); err != Error::OK)
-    return err;
+  if (auto const err = lfs_remove(&_lfs, path.c_str()); err != LFS_ERR_OK)
+    return static_cast<Error>(err);
 
   return std::nullopt;
 }
 
 std::optional<Error> Filesystem::rename(std::string const & old_path, std::string const & new_path)
 {
-  if (auto const err = static_cast<Error>(lfs_rename(&_lfs, old_path.c_str(), new_path.c_str())); err != Error::OK)
-    return err;
+  if (auto const err = lfs_rename(&_lfs, old_path.c_str(), new_path.c_str()); err != LFS_ERR_OK)
+    return static_cast<Error>(err);
 
   return std::nullopt;
 }
@@ -116,8 +116,8 @@ std::optional<Error> Filesystem::truncate(FileHandle const fd, int const size)
   if (iter == _file_desc_map.end())
     return Error::NO_FD_ENTRY;
 
-  if (auto const err = static_cast<Error>(lfs_file_truncate(&_lfs, iter->second.get(), size)); err != Error::OK)
-    return err;
+  if (auto const err = lfs_file_truncate(&_lfs, iter->second.get(), size); err != LFS_ERR_OK)
+    return static_cast<Error>(err);
 
   return std::nullopt;
 }
@@ -171,8 +171,8 @@ std::optional<Error> Filesystem::rewind(FileHandle const fd)
   if (iter == _file_desc_map.end())
     return Error::NO_FD_ENTRY;
 
-  if (auto const err = static_cast<Error>(lfs_file_rewind(&_lfs, iter->second.get())); err != Error::OK)
-    return err;
+  if (auto const err = lfs_file_rewind(&_lfs, iter->second.get()); err != LFS_ERR_OK)
+    return static_cast<Error>(err);
 
   return std::nullopt;
 }
@@ -183,8 +183,8 @@ std::optional<Error> Filesystem::sync(FileHandle const fd)
   if (iter == _file_desc_map.end())
     return Error::NO_FD_ENTRY;
 
-  if (auto const err = static_cast<Error>(lfs_file_sync(&_lfs, iter->second.get())); err != Error::OK)
-    return err;
+  if (auto const err = lfs_file_sync(&_lfs, iter->second.get()); err != LFS_ERR_OK)
+    return static_cast<Error>(err);
 
   return std::nullopt;
 }
@@ -197,8 +197,8 @@ std::optional<Error> Filesystem::close(FileHandle const fd)
 
   _file_desc_map.erase(fd);
 
-  if (auto const err = static_cast<Error>(lfs_file_close(&_lfs, iter->second.get())); err != Error::OK)
-    return err;
+  if (auto const err = lfs_file_close(&_lfs, iter->second.get()); err != LFS_ERR_OK)
+    return static_cast<Error>(err);
 
   return std::nullopt;
 }

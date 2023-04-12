@@ -53,7 +53,6 @@ enum class WhenceFlag : int
 
 enum class Error : int
 {
-  OK          = LFS_ERR_OK,
   IO          = LFS_ERR_IO,
   CORRUPT     = LFS_ERR_CORRUPT,
   NOENT       = LFS_ERR_NOENT,
