@@ -6,10 +6,63 @@
 # Class (KEYWORD1)
 #######################################
 
+littlefs	KEYWORD1
+OpenFlag	KEYWORD1
+WhenceFlag	KEYWORD1
+Error	KEYWORD1
+FilesystemConfig	KEYWORD1
+Filesystem	KEYWORD1
+FileHandle	KEYWORD1
+
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
 
+format	KEYWORD2
+mount	KEYWORD2
+unmount	KEYWORD2
+remove	KEYWORD2
+rename	KEYWORD2
+open	KEYWORD2
+sync	KEYWORD2
+close	KEYWORD2
+read	KEYWORD2
+write	KEYWORD2
+truncate	KEYWORD2
+tell	KEYWORD2
+size	KEYWORD2
+seek	KEYWORD2
+rewind	KEYWORD2
+
 #######################################
 # Constants (LITERAL1)
 #######################################
+
+RDONLY	LITERAL1
+WRONLY	LITERAL1
+RDWR	LITERAL1
+CREAT	LITERAL1
+EXCL	LITERAL1
+TRUNC	LITERAL1
+APPEND	LITERAL1
+
+SET	LITERAL1
+CUR	LITERAL1
+END	LITERAL1
+
+OK	LITERAL1
+IO	LITERAL1
+CORRUPT	LITERAL1
+NOENT	LITERAL1
+EXIST	LITERAL1
+NOTDIR	LITERAL1
+ISDIR	LITERAL1
+NOTEMPTY	LITERAL1
+BADF	LITERAL1
+FBIG	LITERAL1
+INVAL	LITERAL1
+NOSPC	LITERAL1
+NOMEM	LITERAL1
+NOATTR	LITERAL1
+NAMETOOLONG	LITERAL1
+NO_FD_ENTRY	LITERAL1
