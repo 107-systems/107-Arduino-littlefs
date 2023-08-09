@@ -24,7 +24,7 @@ static uint8_t const EEPROM_I2C_DEV_ADDR = 0x50;
 
 static EEPROM_24LCxx eeprom(EEPROM_24LCxx_Type::LC64,
                             EEPROM_I2C_DEV_ADDR,
-                            [](size_t const dev_addr) { Wire.beginTransmission(dev_addr); },
+                            [](uint8_t const dev_addr) { Wire.beginTransmission(dev_addr); },
                             [](uint8_t const data) { Wire.write(data); },
                             []() { return Wire.endTransmission(); },
                             [](uint8_t const dev_addr, size_t const len) -> size_t { return Wire.requestFrom(dev_addr, len); },
