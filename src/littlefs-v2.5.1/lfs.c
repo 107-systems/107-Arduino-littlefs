@@ -5763,7 +5763,7 @@ lfs_ssize_t lfs_fs_size(lfs_t *lfs) {
     LFS_TRACE("lfs_fs_size(%p)", (void*)lfs);
 
     lfs_ssize_t res = lfs_fs_rawsize(lfs);
-  1989
+
     LFS_TRACE("lfs_fs_size -> %"PRId32, res);
     LFS_UNLOCK(lfs->cfg);
     return res;
