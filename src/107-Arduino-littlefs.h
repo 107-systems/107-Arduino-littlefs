@@ -99,6 +99,8 @@ public:
                    lfs_size_t const cache_size,
                    lfs_size_t const lookahead_size)
   {
+    memset(&_cfg, 0, sizeof(_cfg));
+
     _cfg.read  = read_func;
     _cfg.prog  = prog_func;
     _cfg.erase = erase_func;
