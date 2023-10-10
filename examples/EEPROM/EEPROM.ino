@@ -125,6 +125,51 @@ void setup()
   // remember the storage is not updated until the file is closed successfully
   (void)filesystem.close(file_hdl);
 
+  auto const fs_size = filesystem.fs_size();
+  Serial.print("fs_size(best effort): ");
+  Serial.println(std::get<size_t>(fs_size));
+
+  #ifndef LFS_READONLY
+    // create some folders
+    (void)filesystem.mkdir("folder1");
+    (void)filesystem.mkdir("folder2");
+  #endif
+
+  // read contents of root folder
+  auto const rc_dir_open = filesystem.dir_open("/");
+  if (std::holds_alternative<littlefs::Error>(rc_dir_open))
+  {
+    Serial.print("dir_open failed with error code ");
+    Serial.println(static_cast<int>(std::get<littlefs::Error>(rc_dir_open)));
+    return;
+  }
+
+  Serial.println("root folder contents:");
+  littlefs::DirHandle const dir_hdl = std::get<littlefs::DirHandle>(rc_dir_open);
+  for(;;)
+  {
+    std::string name;
+    littlefs::Type type;
+    auto const rc_dir_read = filesystem.dir_read(dir_hdl, name, type);
+    if (std::holds_alternative<littlefs::Error>(rc_dir_read))
+    {
+      // Error::NOENT signals end of dir contents reached
+      if (std::get<littlefs::Error>(rc_dir_read) == littlefs::Error::NOENT)
+      {
+        (void)filesystem.dir_close(dir_hdl);
+        break;
+      }
+      Serial.print("dir_read failed with error code ");
+      Serial.println(static_cast<int>(std::get<littlefs::Error>(rc_dir_read)));
+      return;
+    }
+    Serial.print(type == littlefs::Type::DIR ? "DIR" : "FILE");
+    Serial.print('\t');
+    Serial.print(name.c_str());
+    Serial.print('\t');
+    Serial.println(std::get<size_t>(rc_dir_read));
+  }
+
   // release any resources we were using
   (void)filesystem.unmount();
 
