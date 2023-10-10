@@ -68,9 +68,17 @@ enum class Error : int
   NOATTR      = LFS_ERR_NOATTR,
   NAMETOOLONG = LFS_ERR_NAMETOOLONG,
   NO_FD_ENTRY = -50,                 // No entry found for given file descriptor
+  NO_DD_ENTRY = -51,                 // No entry found for given directory descriptor
+};
+
+enum class Type : int
+{
+  REG = LFS_TYPE_REG,
+  DIR = LFS_TYPE_DIR,
 };
 
 typedef size_t FileHandle;
+typedef size_t DirHandle;
 
 /**************************************************************************************
  * CLASS DECLARATION
@@ -125,10 +133,13 @@ private:
   lfs_t _lfs;
   size_t _file_dsc_cnt;
   std::map<size_t, std::shared_ptr<lfs_file_t>> _file_desc_map;
+  size_t _dir_dsc_cnt;
+  std::map<size_t, std::shared_ptr<lfs_dir_t>> _dir_desc_map;
 public:
   Filesystem(FilesystemConfig & cfg)
   : _cfg{cfg}
   , _file_dsc_cnt{0}
+  , _dir_dsc_cnt{0}
   {
     memset(&_lfs, 0, sizeof(_lfs));
   }
@@ -158,6 +169,17 @@ public:
   [[nodiscard]] std::variant<Error, size_t> size  (FileHandle const fd);
   [[nodiscard]] std::variant<Error, size_t> seek  (FileHandle const fd, int const offset, WhenceFlag const whence);
   [[nodiscard]] std::optional<Error>        rewind(FileHandle const fd);
+
+#ifndef LFS_READONLY
+  [[nodiscard]] std::optional<Error> mkdir(std::string const & path);
+#endif
+
+  [[nodiscard]] std::variant<Error, DirHandle> dir_open (std::string const & path);
+  [[nodiscard]] std::optional<Error>           dir_close(DirHandle const dd);
+  [[nodiscard]] std::variant<Error, size_t>    dir_read(DirHandle const dd, std::string & name, Type & type);
+  [[nodiscard]] std::optional<Error>           dir_rewind(DirHandle const dd);
+
+  [[nodiscard]] std::variant<Error, size_t> fs_size();
 };
 
 /**************************************************************************************
