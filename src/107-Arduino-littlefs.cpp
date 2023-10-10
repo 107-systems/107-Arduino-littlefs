@@ -203,6 +203,88 @@ std::optional<Error> Filesystem::close(FileHandle const fd)
   return std::nullopt;
 }
 
+#ifndef LFS_READONLY
+std::optional<Error> Filesystem::mkdir(std::string const & path)
+{
+  if (auto const err = lfs_mkdir(&_lfs, path.c_str()); err != LFS_ERR_OK)
+    return static_cast<Error>(err);
+
+  return std::nullopt;
+}
+#endif
+
+std::variant<Error, DirHandle> Filesystem::dir_open(std::string const & path)
+{
+  auto dir_hdl = std::make_shared<lfs_dir_t>();
+
+  int const rc = lfs_dir_open(&_lfs, dir_hdl.get(), path.c_str());
+
+  if (rc < LFS_ERR_OK)
+    return static_cast<Error>(rc);
+
+  _dir_desc_map[_dir_dsc_cnt++] = dir_hdl;
+  return (_dir_dsc_cnt - 1);
+}
+
+std::optional<Error> Filesystem::dir_close(DirHandle const dd)
+{
+  auto iter = _dir_desc_map.find(dd);
+  if (iter == _dir_desc_map.end())
+    return Error::NO_DD_ENTRY;
+
+  _dir_desc_map.erase(dd);
+
+  if (auto const err = lfs_dir_close(&_lfs, iter->second.get()); err != LFS_ERR_OK)
+    return static_cast<Error>(err);
+
+  return std::nullopt;
+}
+
+std::variant<Error, size_t> Filesystem::dir_read(DirHandle const dd, std::string & name, Type & type)
+{
+  auto iter = _dir_desc_map.find(dd);
+  if (iter == _dir_desc_map.end())
+    return Error::NO_DD_ENTRY;
+
+  lfs_info info;
+  int const rc = lfs_dir_read(&_lfs, iter->second.get(), &info);
+
+  // Note: lfs_dir_read returns false (0) when no more entries, true (1) on success,
+  // and possibly some lfs_error.
+  if (rc == 0)
+    return Error::NOENT;
+
+  if (rc < LFS_ERR_OK)
+    return static_cast<Error>(rc);
+
+  name = std::string(info.name);
+  type = static_cast<Type>(info.type);
+
+  return type == Type::REG ? static_cast<size_t>(info.size) : 0;
+}
+
+std::optional<Error> Filesystem::dir_rewind(FileHandle const dd)
+{
+  auto iter = _dir_desc_map.find(dd);
+  if (iter == _dir_desc_map.end())
+    return Error::NO_DD_ENTRY;
+
+  if (auto const err = lfs_dir_rewind(&_lfs, iter->second.get()); err != LFS_ERR_OK)
+    return static_cast<Error>(err);
+
+  return std::nullopt;
+}
+
+std::variant<Error, size_t> Filesystem::fs_size()
+{
+  int const rc = lfs_fs_size(&_lfs);
+
+  if (rc < LFS_ERR_OK)
+    return static_cast<Error>(rc);
+
+  return static_cast<size_t>(rc);
+}
+
 /**************************************************************************************
  * NAMESPACE
  **************************************************************************************/
